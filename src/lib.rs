@@ -100,3 +100,15 @@ impl Iterator for HC128 {
         }
     }
 }
+
+impl Clone for HC128 {
+    fn clone(&self) -> HC128 {
+        let mut hc128 = HC128 {
+            inner: self.inner.clone(),
+            buff: [0; 64],
+            index: self.index
+        };
+        hc128.buff.clone_from_slice(&self.buff);
+        hc128
+    }
+}

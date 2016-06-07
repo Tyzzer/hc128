@@ -197,6 +197,22 @@ impl Hc128Rng {
     }
 }
 
+impl Clone for Hc128Rng {
+    fn clone(&self) -> Hc128Rng {
+        let mut hc128 = Hc128Rng {
+            t: [0; 1024],
+            x: [0; 16],
+            y: [0; 16],
+            c: 0
+        };
+        hc128.t.clone_from_slice(&self.t);
+        hc128.x.clone_from_slice(&self.x);
+        hc128.y.clone_from_slice(&self.y);
+        hc128.c = self.c;
+        hc128
+    }
+}
+
 
 #[inline]
 fn h1(t: &[u32], x: u32) -> u32 {
