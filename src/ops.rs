@@ -1,5 +1,5 @@
 macro_rules! step {
-    ( @step $h:ident, $t:expr, $x:expr, $tv:expr, $tc:expr, $tb:expr, ( $u:expr, $a:expr, $d:expr, $n:expr ) ) => {{
+    ( @inner $h:ident, $t:expr, $x:expr, $tv:expr, $tc:expr, $tb:expr, ( $u:expr, $a:expr, $d:expr, $n:expr ) ) => {{
         let tmp3 = $h(&$t, $x[$d]);
         $t[$u] = $t[$u]
             .wrapping_add($tb)
@@ -8,7 +8,7 @@ macro_rules! step {
         $n = tmp3 ^ $t[$u];
     }};
     ( P $ctx:expr, $u:expr, $v:expr, $a:expr, $b:expr, $c:expr, $d:expr, $n:expr ) => {
-        step!(@step
+        step!(@inner
             h1, $ctx.t, $ctx.x,
             $ctx.t[$v].rotate_right(23),
             $ctx.x[$c].rotate_right(10),
@@ -17,7 +17,7 @@ macro_rules! step {
         )
     };
     ( Q $ctx:expr, $u:expr, $v:expr, $a:expr, $b:expr, $c:expr, $d:expr, $n:expr ) => {
-        step!(@step
+        step!(@inner
             h2, $ctx.t, $ctx.y,
             $ctx.t[$v].rotate_right(32 - 23),
             $ctx.y[$c].rotate_right(32 - 10),
@@ -28,7 +28,7 @@ macro_rules! step {
 }
 
 macro_rules! update {
-    ( @update $h:ident, $t:expr, $x:expr, $tv:expr, $tc:expr, $tb:expr, ( $u:expr, $a:expr, $d:expr ) ) => {{
+    ( @inner $h:ident, $t:expr, $x:expr, $tv:expr, $tc:expr, $tb:expr, ( $u:expr, $a:expr, $d:expr ) ) => {{
         let tmp3 = $h(&$t, $x[$d]);
         $t[$u] = $t[$u]
             .wrapping_add($tb)
@@ -37,7 +37,7 @@ macro_rules! update {
         $x[$a] = $t[$u];
     }};
     ( P $ctx:expr, $u:expr, $v:expr, $a:expr, $b:expr, $c:expr, $d:expr ) => {
-        update!(@update
+        update!(@inner
             h1, $ctx.t, $ctx.x,
             $ctx.t[$v].rotate_right(23),
             $ctx.x[$c].rotate_right(10),
@@ -46,7 +46,7 @@ macro_rules! update {
         )
     };
     ( Q $ctx:expr, $u:expr, $v:expr, $a:expr, $b:expr, $c:expr, $d:expr ) => {
-        update!(@update
+        update!(@inner
             h2, $ctx.t, $ctx.y,
             $ctx.t[$v].rotate_right(32 - 23),
             $ctx.y[$c].rotate_right(32 - 10),
@@ -113,22 +113,22 @@ impl Hc128Rng {
         let dd = (cc + 16) & 0x1ff;
 
         if self.c < 512 {
-            step!(P self, cc + 0, cc + 1,  0,  6,  13,  4, output[0]);
-            step!(P self, cc + 1, cc + 2,  1,  7,  14, 5,  output[1]);
-            step!(P self, cc + 2, cc + 3,  2,  8,  15, 6,  output[2]);
-            step!(P self, cc + 3, cc + 4,  3,  9,  0,  7,  output[3]);
-            step!(P self, cc + 4, cc + 5,  4,  10, 1,  8,  output[4]);
-            step!(P self, cc + 5, cc + 6,  5,  11, 2,  9,  output[5]);
-            step!(P self, cc + 6, cc + 7,  6,  12, 3,  10, output[6]);
-            step!(P self, cc + 7, cc + 8,  7,  13, 4,  11, output[7]);
-            step!(P self, cc + 8, cc + 9,  8,  14, 5,  12, output[8]);
-            step!(P self, cc + 9, cc + 10, 9,  15, 6,  13, output[9]);
-            step!(P self, cc + 10,cc + 11, 10, 0,  7,  14, output[10]);
-            step!(P self, cc + 11,cc + 12, 11, 1,  8,  15, output[11]);
-            step!(P self, cc + 12,cc + 13, 12, 2,  9,  0,  output[12]);
-            step!(P self, cc + 13,cc + 14, 13, 3,  10, 1,  output[13]);
-            step!(P self, cc + 14,cc + 15, 14, 4,  11, 2,  output[14]);
-            step!(P self, cc + 15,dd + 0,  15, 5,  12, 3,  output[15]);
+            step!(P self, cc + 0,  cc + 1,  0,  6,  13,  4, output[0]);
+            step!(P self, cc + 1,  cc + 2,  1,  7,  14, 5,  output[1]);
+            step!(P self, cc + 2,  cc + 3,  2,  8,  15, 6,  output[2]);
+            step!(P self, cc + 3,  cc + 4,  3,  9,  0,  7,  output[3]);
+            step!(P self, cc + 4,  cc + 5,  4,  10, 1,  8,  output[4]);
+            step!(P self, cc + 5,  cc + 6,  5,  11, 2,  9,  output[5]);
+            step!(P self, cc + 6,  cc + 7,  6,  12, 3,  10, output[6]);
+            step!(P self, cc + 7,  cc + 8,  7,  13, 4,  11, output[7]);
+            step!(P self, cc + 8,  cc + 9,  8,  14, 5,  12, output[8]);
+            step!(P self, cc + 9,  cc + 10, 9,  15, 6,  13, output[9]);
+            step!(P self, cc + 10, cc + 11, 10, 0,  7,  14, output[10]);
+            step!(P self, cc + 11, cc + 12, 11, 1,  8,  15, output[11]);
+            step!(P self, cc + 12, cc + 13, 12, 2,  9,  0,  output[12]);
+            step!(P self, cc + 13, cc + 14, 13, 3,  10, 1,  output[13]);
+            step!(P self, cc + 14, cc + 15, 14, 4,  11, 2,  output[14]);
+            step!(P self, cc + 15, dd + 0,  15, 5,  12, 3,  output[15]);
         } else {
             step!(Q self, 512 + cc + 0,  512 + cc + 1,  0,  6,  13, 4,  output[0]);
             step!(Q self, 512 + cc + 1,  512 + cc + 2,  1,  7,  14, 5,  output[1]);
