@@ -8,3 +8,6 @@ license = "MIT"
 
 [dependencies]
 byteorder = { version = "0.5", features = [] }
+
+[dev-dependencies]
+rust-crypto = "0.2"
