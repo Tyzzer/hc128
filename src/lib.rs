@@ -5,6 +5,7 @@ extern crate byteorder;
 mod util;
 mod ops;
 
+use byteorder::ByteOrder;
 pub use ops::Hc128Rng;
 
 
@@ -54,11 +55,14 @@ pub use ops::Hc128Rng;
 ///     ]
 /// );
 /// ```
+#[derive(Copy)]
 pub struct HC128 {
     inner: Hc128Rng,
-    buff: [u8; 64],
+    buff: [u8; 4],
     index: usize
 }
+
+impl Clone for HC128 { fn clone(&self) -> HC128 { *self } }
 
 impl HC128 {
     pub fn new(key: &[u8], iv: &[u8]) -> HC128 {
@@ -73,14 +77,33 @@ impl HC128 {
 
         HC128 {
             inner: Hc128Rng::init(&ukey, &uiv),
-            buff: [0; 64],
-            index: 64
+            buff: [0; 4],
+            index: 0
         }
     }
 
     pub fn process(&mut self, input: &[u8], output: &mut [u8]) {
-        for (i, k) in self.take(input.len()).enumerate() {
-            output[i] = input[i] ^ k;
+        let mut pos = 0;
+
+        if input.len() >= self.index {
+            pos += self.index;
+            for (i, b) in self.take(pos).enumerate() {
+                output[i] = input[i] ^ b;
+            }
+        }
+
+        while pos + 4 <= input.len() {
+            util::u32_to_u8(
+                util::Endian::read_u32(&input[pos..pos + 4]) ^ self.inner.gen(),
+                &mut output[pos..pos + 4]
+            );
+
+            pos += 4;
+        }
+
+        for b in self.take(input.len() - pos) {
+            output[pos] = input[pos] ^ b;
+            pos += 1;
         }
     }
 }
@@ -89,26 +112,11 @@ impl Iterator for HC128 {
     type Item = u8;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.index >= self.buff.len() {
-            util::u32_to_u8(&self.inner.gen(), &mut self.buff);
-            self.index = 0;
-            self.next()
-        } else {
-            let output = self.buff[self.index];
-            self.index += 1;
-            Some(output)
+        if self.index == 0 {
+            util::u32_to_u8(self.inner.gen(), &mut self.buff);
         }
-    }
-}
-
-impl Clone for HC128 {
-    fn clone(&self) -> HC128 {
-        let mut hc128 = HC128 {
-            inner: self.inner.clone(),
-            buff: [0; 64],
-            index: self.index
-        };
-        hc128.buff.clone_from_slice(&self.buff);
-        hc128
+        let output = self.buff[self.index];
+        self.index = (self.index + 1) % self.buff.len();
+        Some(output)
     }
 }

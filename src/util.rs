@@ -11,8 +11,6 @@ pub fn u8_to_u32(input: &[u8], output: &mut [u32]) {
 }
 
 #[inline]
-pub fn u32_to_u8(input: &[u32], output: &mut [u8]) {
-    for (i, &b) in input.iter().enumerate() {
-        Endian::write_u32(&mut output[(i * 4)..((i + 1) * 4)], b);
-    }
+pub fn u32_to_u8(input: u32, output: &mut [u8]) {
+    Endian::write_u32(output, input);
 }
