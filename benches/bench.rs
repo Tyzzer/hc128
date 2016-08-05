@@ -13,8 +13,8 @@ fn hc128_bench(b: &mut Bencher) {
 
     let key = [0; 16];
     let iv = [0; 16];
-    let input = [0; 64];
-    let mut output = [0; 64];
+    let input = [0; 1024];
+    let mut output = [0; 1024];
     let mut cipher = HC128::new(&key, &iv);
 
     b.bytes = input.len() as u64;
@@ -28,8 +28,8 @@ fn crypto_bench(b: &mut Bencher) {
 
     let key = [0; 16];
     let iv = [0; 16];
-    let input = [0; 64];
-    let mut output = [0; 64];
+    let input = [0; 1024];
+    let mut output = [0; 1024];
     let mut cipher = Hc128::new(&key, &iv);
 
     b.bytes = input.len() as u64;

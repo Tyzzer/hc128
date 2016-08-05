@@ -9,7 +9,7 @@
 pub struct Hc128Rng {
     p: [u32; 512],
     q: [u32; 512],
-    c: u32
+    c: usize
 }
 
 impl Clone for Hc128Rng { fn clone(&self) -> Hc128Rng { *self } }
@@ -50,7 +50,7 @@ impl Hc128Rng {
     }
 
     pub fn gen(&mut self) -> u32 {
-        let i = self.c as usize & 0x1ff;
+        let i = self.c & 0x1ff;
         let i3 = i.wrapping_sub(3) & 0x1ff;
         let i10 = i.wrapping_sub(10) & 0x1ff;
         let i12 = i.wrapping_sub(12) & 0x1ff;

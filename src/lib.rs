@@ -55,14 +55,12 @@ pub use ops::Hc128Rng;
 ///     ]
 /// );
 /// ```
-#[derive(Copy)]
+#[derive(Clone, Copy)]
 pub struct HC128 {
     inner: Hc128Rng,
     buff: [u8; 4],
     index: usize
 }
-
-impl Clone for HC128 { fn clone(&self) -> HC128 { *self } }
 
 impl HC128 {
     pub fn new(key: &[u8], iv: &[u8]) -> HC128 {
