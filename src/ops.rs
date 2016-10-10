@@ -15,7 +15,7 @@ pub struct Hc128Rng {
 impl Clone for Hc128Rng { fn clone(&self) -> Hc128Rng { *self } }
 
 impl Hc128Rng {
-    pub fn init(key: &[u32], iv: &[u32]) -> Hc128Rng {
+    pub fn init(key: &[u32; 8], iv: &[u32; 8]) -> Hc128Rng {
         let mut w = [0; 1280];
         let mut hc128 = Hc128Rng {
             p: [0; 512],
