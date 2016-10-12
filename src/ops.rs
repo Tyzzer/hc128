@@ -23,10 +23,8 @@ impl Hc128Rng {
             c: 0
         };
 
-        for i in 0..8 {
-            w[i] = key[i];
-            w[i + 8] = iv[i];
-        }
+        w[..8].clone_from_slice(key);
+        w[8..16].clone_from_slice(iv);
         for i in 16..1280 {
             w[i] = f2(w[i - 2])
                 .wrapping_add(w[i - 7])
@@ -34,10 +32,8 @@ impl Hc128Rng {
                 .wrapping_add(w[i - 16])
                 .wrapping_add(i as u32);
         }
-        for i in 0..512 {
-            hc128.p[i] = w[256 + i];
-            hc128.q[i] = w[768 + i];
-        }
+        hc128.p.clone_from_slice(&w[256..768]);
+        hc128.q.clone_from_slice(&w[768..]);
         for i in 0..512 {
             hc128.p[i] = hc128.gen();
         }
