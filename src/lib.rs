@@ -2,10 +2,9 @@
 
 extern crate byteorder;
 
-mod util;
 mod ops;
 
-use byteorder::ByteOrder;
+use byteorder::{ ByteOrder, LittleEndian };
 pub use ops::Hc128Rng;
 
 
@@ -79,17 +78,17 @@ pub struct HC128 {
 
 impl HC128 {
     pub fn new(key: &[u8], iv: &[u8]) -> HC128 {
-        let mut ukey = [0; 8];
-        let mut uiv = [0; 8];
-        util::u8_to_u32(key, &mut ukey[..4]);
-        util::u8_to_u32(iv, &mut uiv[..4]);
-        for i in 4..8 {
-            ukey[i] = ukey[i - 4];
-            uiv[i] = uiv[i - 4];
+        let mut w = [0; 1280];
+
+        for i in 0..4 {
+            w[i] = LittleEndian::read_u32(&key[(i * 4)..((i + 1) * 4)]);
+            w[i + 8] = LittleEndian::read_u32(&iv[(i * 4)..((i + 1) * 4)]);
+            w[i + 4] = w[i];
+            w[i + 8 + 4] = w[i + 8];
         }
 
         HC128 {
-            inner: Hc128Rng::init(&ukey, &uiv),
+            inner: Hc128Rng::with_w(&mut w),
             buff: 0,
             count: 0
         }
@@ -106,9 +105,9 @@ impl HC128 {
         }
 
         while pos + 4 <= input.len() {
-            util::u32_to_u8(
-                util::Endian::read_u32(&input[pos..pos + 4]) ^ self.inner.gen(),
-                &mut output[pos..pos + 4]
+            LittleEndian::write_u32(
+                &mut output[pos..pos + 4],
+                LittleEndian::read_u32(&input[pos..pos + 4]) ^ self.inner.gen()
             );
 
             pos += 4;
