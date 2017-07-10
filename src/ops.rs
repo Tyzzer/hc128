@@ -8,10 +8,12 @@ pub struct Hc128Rng {
 impl Clone for Hc128Rng { fn clone(&self) -> Hc128Rng { *self } }
 
 impl Hc128Rng {
-    pub fn init(key: &[u32; 8], iv: &[u32; 8]) -> Hc128Rng {
+    pub fn init(key: &[u32; 4], iv: &[u32; 4]) -> Hc128Rng {
         let mut w = [0; 1280];
-        w[..8].clone_from_slice(key);
-        w[8..16].clone_from_slice(iv);
+        w[..4].copy_from_slice(key);
+        w[4..8].copy_from_slice(key);
+        w[8..12].copy_from_slice(iv);
+        w[12..16].copy_from_slice(iv);
         Self::with_w(&mut w)
     }
 
@@ -29,8 +31,8 @@ impl Hc128Rng {
                 .wrapping_add(w[i - 16])
                 .wrapping_add(i as u32);
         }
-        hc128.p.clone_from_slice(&w[256..768]);
-        hc128.q.clone_from_slice(&w[768..]);
+        hc128.p.copy_from_slice(&w[256..768]);
+        hc128.q.copy_from_slice(&w[768..]);
         for i in 0..512 {
             hc128.p[i] = hc128.gen();
         }
@@ -90,7 +92,7 @@ fn f2(x: u32) -> u32 {
 #[test]
 fn test() {
    assert_eq!(
-       Hc128Rng::init(&[0; 8], &[0; 8]).gen(),
+       Hc128Rng::init(&[0; 4], &[0; 4]).gen(),
        1930756226
    );
 }
