@@ -1,11 +1,18 @@
-#[derive(Copy)]
 pub struct Hc128Rng {
     p: [u32; 512],
     q: [u32; 512],
     c: usize
 }
 
-impl Clone for Hc128Rng { fn clone(&self) -> Hc128Rng { *self } }
+impl Clone for Hc128Rng {
+    fn clone(&self) -> Hc128Rng {
+        let mut p = [0; 512];
+        let mut q = [0; 512];
+        p.copy_from_slice(&self.p);
+        q.copy_from_slice(&self.q);
+        Hc128Rng { p, q, c: self.c }
+    }
+}
 
 impl Hc128Rng {
     pub fn init(key: &[u32; 4], iv: &[u32; 4]) -> Hc128Rng {
